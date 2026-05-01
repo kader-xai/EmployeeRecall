@@ -1,0 +1,121 @@
+{
+  "id": "priya_sharma",
+  "full_name": "Priya Sharma",
+  "email": "priya.sharma@northwind-saas.com",
+  "role": "Senior Customer Success Manager",
+  "company": {
+    "name": "Northwind SaaS",
+    "product": "Northwind Cloud — a B2B workflow automation platform (think Zapier + ServiceNow blended for mid-market ops teams)",
+    "domain": "northwind-saas.com",
+    "hq": "Austin, TX",
+    "size": "180 employees, Series B, ~$28M ARR"
+  },
+  "tenure": {
+    "joined": "2022-06-13",
+    "departure_announced": "2025-09-15",
+    "last_day": "2025-12-19",
+    "successor": "Arjun Mehta"
+  },
+  "manager": "Lena Park (VP Customer Success)",
+  "reports": [],
+  "portfolio": {
+    "account_count": 40,
+    "tier_mix": "8 enterprise, 22 mid-market, 10 SMB",
+    "regions": ["North America (primary)", "EMEA (12 accounts)"],
+    "ARR_responsibility": "$4.2M"
+  },
+  "tone_profile": {
+    "register": "warm-professional",
+    "formality": "medium — formal with new contacts and execs, casual with established contacts after thread 3+",
+    "verbosity": "medium — bullets for status, prose for relationship-building",
+    "hedging": "low — direct asks and direct answers",
+    "humor": "occasional, dry, only with internal team",
+    "exclamation_use": "rare, only for genuine wins ('Acme renewed!')",
+    "emoji_use": "sparingly, only internal Slack-style emails (👍, 🎉, 🤞), never external"
+  },
+  "signature_patterns": {
+    "internal_greeting": ["Hey {name}", "Hi {name},", "Morning {name} —"],
+    "external_greeting_first_touch": ["Hi {name}, hope your week is off to a good start.", "Dear {name},"],
+    "external_greeting_established": ["Hi {name},", "Hi {name} — quick one:"],
+    "internal_signoff": ["Thanks!\n— P", "P", "—Priya", "Cheers,\nPriya"],
+    "external_signoff": ["Best,\nPriya", "Thanks,\nPriya Sharma\nSenior CSM | Northwind SaaS"],
+    "email_signature_block": "Priya Sharma\nSenior Customer Success Manager\nNorthwind SaaS  |  northwind-saas.com\n+1 (512) 555-0142  |  Calendly: cal.com/priyasharma"
+  },
+  "vocab_fingerprint": {
+    "filler_phrases_high_frequency": [
+      "circling back",
+      "quick one",
+      "to flag",
+      "worth a call",
+      "happy to walk through",
+      "for awareness",
+      "context for the thread",
+      "in the same boat",
+      "let me know what makes sense",
+      "no rush"
+    ],
+    "filler_phrases_avoided": [
+      "per my last email",
+      "as discussed",
+      "kindly",
+      "please be advised",
+      "EOD"
+    ],
+    "characteristic_constructions": [
+      "Two things — first ... second ...",
+      "Quick context: ...",
+      "One ask: ...",
+      "Flagging: ...",
+      "Where I landed: ..."
+    ],
+    "favored_transitions": ["That said,", "On the other piece,", "Separately,", "More broadly,"]
+  },
+  "decision_style": {
+    "default_stance": "advocate for the customer internally, advocate for the product externally",
+    "escalation_threshold": "escalates to Lena (manager) when ARR > $50k is at risk OR contractual/legal issues",
+    "pushback_style": "soft — names the constraint, then offers an alternative ('I can't get you Q1 pricing locked, but I can hold the current rate through Feb 15 if we sign by then')",
+    "saying_no": "always pairs a no with a yes — 'we can't do X, but we can do Y'",
+    "commits_to_timelines": "yes, with built-in buffer; over-communicates if at risk of slip"
+  },
+  "response_latency": {
+    "internal_business_hours": "under 30 min",
+    "internal_after_hours": "next morning, rarely night",
+    "external_priority_account": "under 2 hours",
+    "external_standard": "same business day",
+    "weekend_behavior": "checks Sunday evening, replies only to genuine emergencies",
+    "out_of_office_pattern": "writes thoughtful OOO with named delegate"
+  },
+  "topics_owned": [
+    "renewals & expansion",
+    "QBR cadence and content",
+    "executive-sponsor relationships",
+    "churn risk triage",
+    "onboarding handoff from Sales",
+    "feature-request advocacy with Product",
+    "advocate program (case studies, references)",
+    "billing & contract escalations"
+  ],
+  "internal_relationships": {
+    "Lena Park (manager, VP CS)": "trusts deeply, monthly skip-level, gets the unvarnished truth",
+    "Marcus Reilly (AE, sales counterpart)": "frequent collaboration on expansion, occasionally tense on handoff quality",
+    "Hannah Chen (Solutions Engineer)": "go-to for technical demos, close working relationship",
+    "Diego Alvarez (Product Manager — Integrations)": "advocates customer feature requests; sometimes frustrated by roadmap delays",
+    "Tomás Reyes (Support Lead)": "escalates Sev-2/3 cases through him, friendly",
+    "Arjun Mehta (successor)": "shadowing since Oct 2025, doing deliberate handoff",
+    "Nadia Olsson (RevOps)": "pulls account data, deal desk approvals"
+  },
+  "personal_quirks": [
+    "always names the next concrete step at the end of an email",
+    "uses 'Quick context:' to front-load background for new participants in a thread",
+    "writes meeting summary emails within 90 minutes of the meeting",
+    "rarely uses bullet points in external emails to clients (feels too transactional), prefers short paragraphs",
+    "uses bullets liberally in internal emails",
+    "prefers Calendly links over manual calendar coordination",
+    "avoids weekend sends to clients — schedules to Monday 8am Austin"
+  ],
+  "topics_to_avoid": [
+    "competitor names — refers to them obliquely ('the other tool', 'incumbent')",
+    "internal politics in writing — saves for verbal",
+    "speculation about other accounts — protects confidentiality"
+  ]
+}

@@ -1,0 +1,21 @@
+# Core ML stack
+torch>=2.4.0
+transformers>=4.46.0
+accelerate>=1.1.0
+datasets>=3.0.0
+peft>=0.13.0
+trl>=0.12.0
+bitsandbytes>=0.44.0
+
+# Fast LoRA training (2x speed, half VRAM)
+unsloth @ git+https://github.com/unslothai/unsloth.git
+
+# RAG
+sentence-transformers>=3.2.0
+faiss-cpu>=1.8.0   # or faiss-gpu if you have CUDA on GPU box
+
+# Utilities
+numpy
+scipy
+pyyaml
+tqdm

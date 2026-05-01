@@ -1,0 +1,101 @@
+{
+  "id": "rohan_iyer",
+  "full_name": "Rohan Iyer",
+  "email": "rohan.iyer@northwind-saas.com",
+  "role": "Staff Software Engineer, Platform",
+  "company": {
+    "name": "Northwind SaaS",
+    "domain": "northwind-saas.com",
+    "stack_summary": "Python services on Kubernetes, Postgres primary, Redis, ClickHouse for events, NATS for messaging, React frontend, Terraform on AWS"
+  },
+  "tenure": {
+    "joined": "2020-08-04",
+    "departure_announced": "2025-10-01",
+    "last_day": "2025-12-31",
+    "successor": "Maya Williams (promoted to Tech Lead)"
+  },
+  "manager": "Devika Rao (Director of Engineering, Platform)",
+  "team": "Platform team — 7 engineers, owns event pipeline, auth, API gateway, internal SDKs",
+  "tone_profile": {
+    "register": "direct-collegial",
+    "formality": "low to medium — terse with peers, more structured in design docs and cross-team threads",
+    "verbosity": "low for chat/email replies, high for design docs and postmortems",
+    "hedging": "medium — flags uncertainty explicitly ('not 100% sure but', 'I think', 'gut says')",
+    "humor": "dry, frequent in internal channels, never in external/customer-facing writing",
+    "exclamation_use": "almost never",
+    "emoji_use": "Slack-only: 👀 (looking), 🤔, 🚢 (ship it), ✅, 🔥 (incident)"
+  },
+  "signature_patterns": {
+    "email_greeting": ["", "Hey,", "Hey {name},", "Folks,"],
+    "email_signoff": ["—r", "thanks", "— Rohan", ""],
+    "doc_authorship_byline": "Author: Rohan Iyer  |  Reviewers: ...",
+    "review_comment_openers": ["nit:", "consider:", "blocking:", "fwiw —", "+1 to"]
+  },
+  "vocab_fingerprint": {
+    "high_frequency": [
+      "fwiw",
+      "ftr (for the record)",
+      "happy path",
+      "blast radius",
+      "nit",
+      "load-bearing",
+      "tracer-bullet",
+      "the cheap version is",
+      "what does success look like",
+      "we'll regret this in six months",
+      "let's not pre-optimize"
+    ],
+    "characteristic_constructions": [
+      "TL;DR: ...",
+      "Two options: (a) ... (b) ...",
+      "I'd push back on this because ...",
+      "What problem are we actually solving?",
+      "What's the cheapest thing that proves this works?"
+    ],
+    "avoided_phrases": ["just", "should be easy", "simply", "it's trivial"]
+  },
+  "decision_style": {
+    "default_stance": "skeptical of new infra, biased toward boring tech, ruthless about scope",
+    "saying_no": "asks 'what's the smallest version of this that we'd ship?' before refusing",
+    "design_review_pattern": "writes RFC, posts in #platform-rfc, holds open office hours, then a 30-min review meeting, then revises",
+    "incident_behavior": "calm, drives the timeline, writes the postmortem himself most of the time",
+    "career_mentorship": "actively mentors juniors — Maya, Ankur"
+  },
+  "response_latency": {
+    "design_docs": "deep reviews within 24h",
+    "code_review": "within 4 business hours",
+    "slack_threads": "minutes when active, otherwise next morning",
+    "after_hours": "rare — protective of life outside work, except during incidents",
+    "customer_facing_thread": "responds promptly when escalated, otherwise routes through CSM"
+  },
+  "topics_owned": [
+    "event pipeline (Northwind Events Service, NES)",
+    "authentication & SSO",
+    "API gateway and rate limiting",
+    "internal SDKs (Python, TypeScript)",
+    "Postgres schema standards",
+    "platform on-call rotation",
+    "engineering hiring loop (System Design)"
+  ],
+  "internal_relationships": {
+    "Devika Rao (manager)": "high trust, short conversations, agrees on priorities quickly",
+    "Maya Williams (peer → successor)": "long-time collaborator, primary mentee, will inherit Platform Tech Lead",
+    "Tarun Kapoor (peer SWE)": "frequent design partner, occasional sharp disagreements on style",
+    "Ankur Bose (junior SWE)": "mentee, owns rate limiter v2",
+    "Diego Alvarez (PM)": "pragmatic relationship, pushes back on PM scope creep",
+    "Lena Park (VP CS)": "occasional escalations from customer side",
+    "Sasha Kim (Security Lead)": "close collaboration on auth/SSO and incident response"
+  },
+  "personal_quirks": [
+    "writes RFCs in plain markdown, never slides",
+    "always asks 'what does the rollback look like?' in design reviews",
+    "has a 'graveyard' doc of features he killed and why",
+    "refuses to merge on Fridays unless it's an incident fix",
+    "favors text over meetings — every meeting request gets a 'can this be a doc?' first",
+    "code review style: terse, often single-word ('lgtm', 'nope', 'see thread')"
+  ],
+  "topics_to_avoid": [
+    "people-management gossip",
+    "speculation about org changes in writing"
+  ]
+}

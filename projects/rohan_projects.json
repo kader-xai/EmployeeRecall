@@ -1,0 +1,140 @@
+{
+  "_note": "Rohan's ownership and decision footprint over 5 years. Each project has decision drivers, key threads, and people involved — used to drive realistic email/meeting/RFC generation.",
+  "projects": [
+    {
+      "id": "events-store-rfc",
+      "title": "Events Service datastore selection — Postgres vs MongoDB vs ClickHouse",
+      "year": "2023-Q3",
+      "status": "decided — Postgres, with ClickHouse as future-Q3 contingency",
+      "deep_storyline": true,
+      "summary": "Sept 2023 RFC. Rohan argued against MongoDB (relational queries to users/subscriptions, Mongo migration scars on billing). ClickHouse considered but rejected as premature given event volume. Final decision in Sept 14 architecture review. Revisit trigger: 50M events/day.",
+      "people": ["Rohan Iyer", "Maya Williams", "Tarun Kapoor", "Devika Rao", "Diego Alvarez"],
+      "artifacts": ["RFC: Events store — Q3 2023", "ADR-0017"],
+      "decision": "Postgres. ClickHouse re-evaluation gated on >50M events/day."
+    },
+    {
+      "id": "rate-limiter-v2",
+      "title": "Rate limiter rewrite (v1 token-bucket → v2 leaky-bucket)",
+      "year": "2024",
+      "status": "shipped 2024-08",
+      "deep_storyline": true,
+      "summary": "May 2024 outage exposed race condition in v1 Redis token-bucket under burst traffic. Rohan pushed back on full rewrite, ended up with leaky-bucket variant. Ankur Bose did most implementation under Rohan's review. Known limitation: per-tenant limits not synced across regions (tech debt flagged by Maya).",
+      "people": ["Rohan Iyer", "Ankur Bose", "Maya Williams", "Mei Lin"],
+      "artifacts": ["RFC: ratelimit-v2", "Postmortem: 2024-05-14 burst-traffic outage", "PR: ratelimit-v2 #421"],
+      "decision": "Leaky-bucket impl in ratelimit-v2 repo. Cross-region sync deferred."
+    },
+    {
+      "id": "auth-sso-saml-oidc",
+      "title": "SSO architecture — SAML + OIDC support",
+      "year": "2024",
+      "status": "shipped 2024-Q3, OIDC GA, SAML beta",
+      "deep_storyline": true,
+      "summary": "Customer-driven (Hooli, Umbrella, Globex). Built OIDC-first because of cleaner spec and library quality; SAML added under sustained enterprise demand. Yelena Petrov primary owner; Rohan reviewed. Sasha (Security) joint sign-off.",
+      "people": ["Rohan Iyer", "Yelena Petrov", "Sasha Kim", "Diego Alvarez"],
+      "artifacts": ["RFC: SSO unified architecture", "ADR-0023: OIDC-first"],
+      "decision": "OIDC-first; SAML as fallback. JIT provisioning gated on customer SCIM support."
+    },
+    {
+      "id": "api-gateway-migration",
+      "title": "API gateway migration — Kong → in-house Envoy-based",
+      "year": "2024",
+      "status": "shipped 2024-12 partial; Kong fully retired 2025-Q2",
+      "deep_storyline": true,
+      "summary": "Kong's licensing model + plugin pain motivated move to Envoy with thin Go control plane. Rohan was reluctant initially — proposed staying on Kong with custom plugins — overruled by ecosystem complexity. Drove migration in 3 phases. Resulted in 30% latency reduction at p99.",
+      "people": ["Rohan Iyer", "Maya Williams", "Tarun Kapoor", "Mei Lin"],
+      "artifacts": ["RFC: API gateway v2", "Postmortem: Phase-2 cutover incident 2024-10"],
+      "decision": "Envoy with Go control plane. Kong fully retired by 2025-Q2."
+    },
+    {
+      "id": "incident-2024-05-14",
+      "title": "Incident: 2024-05-14 burst-traffic outage",
+      "year": "2024",
+      "status": "resolved, postmortem published",
+      "deep_storyline": true,
+      "summary": "Hooli batch-job kicked off ~3x normal request volume at 14:22 UTC. v1 rate limiter race condition let traffic through, overwhelming events service. 47 minutes degraded, 12 minutes full outage. Trigger for rate-limiter-v2 project.",
+      "people": ["Rohan Iyer (incident commander)", "Mei Lin", "Tarun Kapoor", "Ankur Bose"],
+      "artifacts": ["Postmortem: 2024-05-14"],
+      "decision": "Action items: rate-limiter-v2, per-tenant alerting, customer-traffic-pattern review."
+    },
+    {
+      "id": "incident-2025-05-22",
+      "title": "Incident: 2025-05-22 API rate-limit cascade affecting Hooli",
+      "year": "2025",
+      "status": "resolved, postmortem published",
+      "deep_storyline": true,
+      "summary": "Misconfigured per-tenant limit on Hooli's recently-expanded usage tripped global circuit breaker. Affected 9% of API traffic for 38 minutes. Rohan + Mei coordinated; Priya managed customer comms. SLA credit issued. Resulted in better tenant-isolation work.",
+      "people": ["Rohan Iyer", "Mei Lin", "Priya Sharma", "Ankur Bose"],
+      "artifacts": ["Postmortem: 2025-05-22", "SLA credit memo"],
+      "decision": "Tenant isolation hardened; alerting on limit-derived events added."
+    },
+    {
+      "id": "postgres-multi-region",
+      "title": "Postgres multi-region read replicas",
+      "year": "2024-Q4",
+      "status": "shipped",
+      "deep_storyline": false,
+      "summary": "Added read replicas in eu-west-1 and us-west-2. Priya's EMEA accounts (Macrohard) drove this.",
+      "people": ["Rohan Iyer", "Maya Williams", "Mei Lin"]
+    },
+    {
+      "id": "internal-sdks-standardization",
+      "title": "Internal SDK standardization (Python + TS)",
+      "year": "2023-2024",
+      "status": "shipped",
+      "deep_storyline": false,
+      "summary": "Unified the auth + retry + telemetry behavior across internal services. Bryan Okonkwo primary; Rohan reviewer.",
+      "people": ["Rohan Iyer", "Bryan Okonkwo"]
+    },
+    {
+      "id": "scim-provisioning",
+      "title": "SCIM 2.0 provisioning support",
+      "year": "2025-Q1",
+      "status": "shipped",
+      "deep_storyline": false,
+      "summary": "Built atop SSO work. Driven by enterprise renewals (Globex, Hooli)."
+    },
+    {
+      "id": "events-clickhouse-spike",
+      "title": "ClickHouse spike for events service",
+      "year": "2025-Q2",
+      "status": "spike completed, deferred",
+      "deep_storyline": true,
+      "summary": "Tarun ran 3-week spike. Volume not yet at trigger threshold (45M/day vs 50M trigger). Decision: defer. Document spike findings for next year.",
+      "people": ["Tarun Kapoor", "Rohan Iyer"]
+    },
+    {
+      "id": "killed-graphql-gateway",
+      "title": "Proposed GraphQL public gateway (KILLED)",
+      "year": "2024-Q1",
+      "status": "killed",
+      "deep_storyline": true,
+      "summary": "PM (Diego) proposed exposing GraphQL gateway externally for partner integrations. Rohan killed it after RFC review — REST already mature, GraphQL added auth-N/Z and N+1 risk for marginal benefit. Lives in Rohan's 'graveyard' doc.",
+      "people": ["Rohan Iyer", "Diego Alvarez", "Devika Rao"],
+      "artifacts": ["RFC: GraphQL public gateway", "Graveyard entry: GraphQL gateway"]
+    },
+    {
+      "id": "killed-microservice-split-billing",
+      "title": "Proposed split of Billing service into 4 microservices (KILLED)",
+      "year": "2023-Q4",
+      "status": "killed",
+      "deep_storyline": false,
+      "summary": "Daniel Heath proposed splitting Billing. Rohan pushed back: 'we have one team, we don't need four services.' Compromise: extracted only Invoice generation as a worker."
+    },
+    {
+      "id": "hiring-system-design-loop",
+      "title": "Engineering hiring — System Design loop redesign",
+      "year": "2024",
+      "status": "implemented",
+      "deep_storyline": false,
+      "summary": "Rohan owned redesign of system-design interview rubric. New rubric in active use across all platform hires."
+    },
+    {
+      "id": "platform-onboarding-doc",
+      "title": "Platform onboarding bootcamp doc",
+      "year": "2024-2025",
+      "status": "live, evergreen",
+      "deep_storyline": false,
+      "summary": "Rohan maintains the 'first 30 days on Platform' guide."
+    }
+  ]
+}

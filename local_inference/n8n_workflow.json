@@ -1,0 +1,137 @@
+{
+  "name": "ProjectRecall - Slack to Persona",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "slack-persona",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "slack-webhook",
+      "name": "Slack Slash Command",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "slack-persona"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Slack slash command payload is application/x-www-form-urlencoded.\n// Format: /ask-priya What happened with Acme?\n//      or: /ask-rohan Why did we kill GraphQL?\n\nconst body = $input.item.json.body || $input.item.json;\nconst command = (body.command || '').replace('/', '');   // 'ask-priya'\nconst text = body.text || '';\nconst persona = command.replace('ask-', '') || 'priya';\nconst response_url = body.response_url;\n\nreturn {\n  persona,\n  question: text.trim(),\n  response_url,\n  user: body.user_name,\n  channel: body.channel_name,\n};"
+      },
+      "id": "parse-slack",
+      "name": "Parse Slack Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"response_type\": \"in_channel\",\n  \"text\": \"_Asking {{$json.persona}} about: *{{$json.question}}* ..._\"\n}"
+      },
+      "id": "ack-slack",
+      "name": "Ack Slack (3s rule)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/ask",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"persona\": \"{{$json.persona}}\",\n  \"question\": \"{{$json.question}}\"\n}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "call-api",
+      "name": "Call Persona API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the API response as a Slack message with citations.\nconst api = $input.item.json;\nconst persona = api.persona;\nconst answer = api.answer;\nconst sources = (api.sources || []).slice(0, 5);\nconst response_url = $('Parse Slack Payload').item.json.response_url;\n\nconst sourcesText = sources.length\n  ? '\\n\\n*Sources:*\\n' + sources.map(s => `• \\`${s.doc_id}\\` (${s.date}) — score ${s.score.toFixed(2)}`).join('\\n')\n  : '';\n\nreturn {\n  response_url,\n  payload: {\n    response_type: 'in_channel',\n    text: `*${persona}*: ${answer}${sourcesText}`,\n  },\n};"
+      },
+      "id": "format-reply",
+      "name": "Format Slack Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$json.response_url}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "post-back",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 400]
+    }
+  ],
+  "connections": {
+    "Slack Slash Command": {
+      "main": [
+        [
+          {
+            "node": "Parse Slack Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Slack Payload": {
+      "main": [
+        [
+          {
+            "node": "Ack Slack (3s rule)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Persona API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Persona API": {
+      "main": [
+        [
+          {
+            "node": "Format Slack Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Slack Reply": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

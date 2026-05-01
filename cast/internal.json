@@ -1,0 +1,38 @@
+{
+  "company": "Northwind SaaS",
+  "domain": "northwind-saas.com",
+  "leadership": [
+    {"name": "Caroline Whitfield", "email": "caroline@northwind-saas.com", "role": "CEO & Co-founder", "joined": "2019"},
+    {"name": "Stefan Kowalski", "email": "stefan@northwind-saas.com", "role": "CTO & Co-founder", "joined": "2019"},
+    {"name": "Renee Akoth", "email": "renee@northwind-saas.com", "role": "VP Engineering", "joined": "2021"},
+    {"name": "Lena Park", "email": "lena.park@northwind-saas.com", "role": "VP Customer Success", "joined": "2022"},
+    {"name": "Bart Wexler", "email": "bart.wexler@northwind-saas.com", "role": "VP Sales", "joined": "2021"},
+    {"name": "Devika Rao", "email": "devika.rao@northwind-saas.com", "role": "Director of Engineering, Platform", "joined": "2020"},
+    {"name": "Ines Carvalho", "email": "ines.carvalho@northwind-saas.com", "role": "Director of Product", "joined": "2022"},
+    {"name": "Sasha Kim", "email": "sasha.kim@northwind-saas.com", "role": "Head of Security", "joined": "2023"}
+  ],
+  "customer_success_team": [
+    {"name": "Priya Sharma", "email": "priya.sharma@northwind-saas.com", "role": "Senior CSM (Enterprise)", "tenure": "2022-06 to 2025-12"},
+    {"name": "Arjun Mehta", "email": "arjun.mehta@northwind-saas.com", "role": "CSM (joined 2025-09 to take over Priya's book)"},
+    {"name": "Holly Tran", "email": "holly.tran@northwind-saas.com", "role": "Senior CSM (peer, EMEA accounts)"},
+    {"name": "Marcus Reilly", "email": "marcus.reilly@northwind-saas.com", "role": "Senior Account Executive (sales counterpart for expansion)"},
+    {"name": "Hannah Chen", "email": "hannah.chen@northwind-saas.com", "role": "Solutions Engineer"},
+    {"name": "Tomás Reyes", "email": "tomas.reyes@northwind-saas.com", "role": "Customer Support Lead"},
+    {"name": "Nadia Olsson", "email": "nadia.olsson@northwind-saas.com", "role": "Revenue Operations Manager"},
+    {"name": "Diego Alvarez", "email": "diego.alvarez@northwind-saas.com", "role": "Product Manager — Integrations"}
+  ],
+  "platform_engineering_team": [
+    {"name": "Rohan Iyer", "email": "rohan.iyer@northwind-saas.com", "role": "Staff Engineer (departing 2025-12)"},
+    {"name": "Maya Williams", "email": "maya.williams@northwind-saas.com", "role": "Senior SWE → Tech Lead (Rohan's successor)"},
+    {"name": "Tarun Kapoor", "email": "tarun.kapoor@northwind-saas.com", "role": "Senior SWE (data & events)"},
+    {"name": "Ankur Bose", "email": "ankur.bose@northwind-saas.com", "role": "SWE II (rate limiter, gateway)"},
+    {"name": "Yelena Petrov", "email": "yelena.petrov@northwind-saas.com", "role": "Senior SWE (auth & SSO)"},
+    {"name": "Bryan Okonkwo", "email": "bryan.okonkwo@northwind-saas.com", "role": "SWE II (SDKs, DX)"},
+    {"name": "Mei Lin", "email": "mei.lin@northwind-saas.com", "role": "SRE"}
+  ],
+  "adjacent_engineering": [
+    {"name": "Daniel Heath", "email": "daniel.heath@northwind-saas.com", "role": "Tech Lead, Billing service"},
+    {"name": "Priscilla Adeyemi", "email": "priscilla.adeyemi@northwind-saas.com", "role": "Tech Lead, Workflow runtime"},
+    {"name": "Gus Romero", "email": "gus.romero@northwind-saas.com", "role": "Frontend Tech Lead"}
+  ]
+}

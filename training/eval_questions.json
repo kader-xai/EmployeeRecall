@@ -1,0 +1,35 @@
+{
+  "priya": [
+    {"q": "What happened with Acme Corp in Q1 2025?", "must_mention": ["billing","credit","Mike Reyes","Sarah Lin","31 seats","$4.2k"]},
+    {"q": "Why did we credit Acme $4,200?", "must_mention": ["dormant","seat","18","billing"]},
+    {"q": "What's the soft commit on Acme's Premium upgrade?", "must_mention": ["Q3","SSO","security finding","conditional"]},
+    {"q": "Why did Rekall churn?", "must_mention": ["vertical","competitor","corporate-travel","integration"]},
+    {"q": "Who is Mike Reyes and how should I handle him?", "must_mention": ["CFO","Acme","direct","billing"]},
+    {"q": "What's the current state of the Globex account?", "must_mention": ["220k","renewal","Linda","executive sponsor"]},
+    {"q": "Tell me about the Umbrella security questionnaire.", "must_mention": ["86","SOC2","HIPAA","Sasha","Q47","KMS"]},
+    {"q": "What happened in the May 2025 Hooli incident from the customer side?", "must_mention": ["rate limit","Brent","SLA","reference","credit"]},
+    {"q": "What was the loss-driver pattern across our corporate-travel-vertical accounts?", "must_mention": ["Rekall","Macrohard","Vandelay","integration","vertical"]},
+    {"q": "Who is Robin Carver?", "must_mention": ["Initech","champion","Head of Operations","advocate"]},
+    {"q": "What did we change about Acme's billing terms at renewal?", "must_mention": ["monthly active billed user","event-active"]},
+    {"q": "What was the Q3 2025 expansion result for Acme?", "must_mention": ["Premium","18k","greenlight","Mike","July"]},
+    {"q": "What's the BuyNLarge renewal posture?", "must_mention": ["365k","two-year","December","Arjun"]},
+    {"q": "Which accounts are in the expansion-watch bucket?", "must_mention": ["Acme","Initech"]},
+    {"q": "What did Lia Sandoval say about why Rekall left?", "must_mention": ["horizontal","vertical","competitor","integrations"]}
+  ],
+  "rohan": [
+    {"q": "Why are we using Postgres for events instead of MongoDB?", "must_mention": ["join","subscriptions","2022","billing","Tarun","ADR-0017"]},
+    {"q": "What was the May 2024 incident?", "must_mention": ["Hooli","burst","rate limiter","race","token-bucket","47 minutes"]},
+    {"q": "Why did we kill the GraphQL gateway?", "must_mention": ["partner","REST","sparse-fieldsets","authz","graveyard"]},
+    {"q": "What's the rate limiter v2.1 design recommendation?", "must_mention": ["global limit","per-region","cross-region","Maya","cheap"]},
+    {"q": "What's the trigger to revisit ClickHouse?", "must_mention": ["50M","60M","p95","aggregation"]},
+    {"q": "What does ADR-0023 say?", "must_mention": ["OIDC","SAML","SSO","Yelena","Sasha"]},
+    {"q": "Why did the May 2025 incident happen?", "must_mention": ["Hooli","limit","expansion","config","circuit breaker"]},
+    {"q": "Who should own ratelimit-v2.1?", "must_mention": ["Ankur","design lead","Maya"]},
+    {"q": "What was the result of the ClickHouse spike?", "must_mention": ["3.5x","42M","defer","Tarun","60M"]},
+    {"q": "Why did Rohan push back on the GraphQL gateway?", "must_mention": ["authz","N+1","partner volume","REST","sparse"]},
+    {"q": "What's the postmortem action item we still owe on the 2024 incident?", "must_mention": ["per-tenant","connection","isolation","cross-region"]},
+    {"q": "Why did we choose leaky-bucket over token-bucket for v2?", "must_mention": ["smoother","atomic","Lua","operational"]},
+    {"q": "What's in Rohan's graveyard doc?", "must_mention": ["GraphQL","killed","conditions to revisit"]},
+    {"q": "What's the platform handover priority list for Maya?", "must_mention": ["v2.1","circuit breaker","tenant pool","ClickHouse"]}
+  ]
+}
