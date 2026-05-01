@@ -4,7 +4,7 @@
 
 <h1 align="center">Employee Recall</h1>
 
-<p align="center">A persona-continuity LoRA + RAG pipeline. Synthetic dataset, full reproduction recipe, runs on a laptop.</p>
+<p align="center">An open recipe for capturing a departing employee's voice and memory in an AI successor.</p>
 
 <p align="center">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
@@ -14,329 +14,282 @@
 
 ---
 
-## What this is
+## The idea
 
-When a senior employee leaves, two things go with them: how they wrote, and what they knew. Onboarding docs cover neither.
+When a senior employee leaves, two things go with them:
 
-This repo is a working recipe for capturing both as a small, locally-runnable model:
+- **Voice** — how they wrote to customers, peers, executives.
+- **Knowledge** — *why* they made the calls they made, what was promised, who's who.
 
-- A LoRA adapter trained on the persona's reply pairs holds the **voice**.
-- A FAISS index over their corpus holds the **knowledge**.
-- A short system prompt holds the **identity**.
+Onboarding docs cover neither. This project is a working recipe for capturing both as a small, locally runnable model.
 
-At inference time the three are stitched together: retrieve top-k chunks, hand them to the fine-tuned model with `[Source N]` labels, return a cited reply in the persona's voice.
+The architecture is two pieces glued together:
 
-The corpus is fully synthetic — no real employee data is used or required. Two demo personas ship with the repo (Priya, Senior CSM; Rohan, Staff Engineer). Swap them out for your own and re-run.
+- A **LoRA adapter** trained on the persona's reply pairs holds the *voice*.
+- A **FAISS vector index** over their corpus holds the *knowledge*.
 
----
+At question time, retrieve the top relevant chunks from the index, hand them to the fine-tuned model with `[Source N]` labels, and return a cited reply in the persona's voice.
 
-## Capabilities at a glance
-
-### Synthetic data
-
-- Hand-authored persona fingerprints (tone, vocab, decision style, response cadence, internal relationships, quirks).
-- Three-tier corpus: hand-written storylines (depth) + dense per-account/project (realism) + bulk routine (volume).
-- 18,978 documents across 4 simulated years, fully deterministic (`random.seed(42)` — same output on every run).
-- Multi-format extraction: same content rendered to `.eml` / `.html` / `.ics` / `.vtt` / `.md` / `.txt` for demos that need real mailbox or calendar files.
-- Cross-persona storylines: the same incident appears in both Priya's customer-comms history and Rohan's engineering postmortems.
-
-### Training
-
-- LoRA fine-tuning on Qwen2.5-7B (or 3B for free-tier Colab) via Unsloth + PEFT + TRL.
-- 4-bit base load with bitsandbytes; rank-16 adapters on all attention + MLP linear layers.
-- Training pipeline: prep → embed → train → merge → quantise. Runs end-to-end on a single A100 in ~30 minutes for ~$0.25.
-- Per-persona output: ~150 MB LoRA adapter + ~75 MB FAISS index + ~4.5 GB Q4_K_M GGUF.
-- Built-in 95/5 SFT train/eval split, deterministic.
-
-### Retrieval
-
-- BGE-base-en-v1.5 embedder, 768-dim, L2-normalised.
-- FAISS `IndexFlatIP` (exact cosine search). Sub-5 ms per query for ~17k chunks.
-- Type-aware chunking: emails kept whole, meetings split by section, RFCs split by markdown heading.
-- Citations injected via `[Source N]` labels in the prompt; model is instructed to cite inline.
-- Per-chunk metadata (doc_id, date, doc_type, related_account / related_project) preserved for provenance.
-
-### Inference
-
-- Three modes:
-  - **RAG-grounded `ask()`** — retrieve top-k chunks and answer with citations.
-  - **Voice-only `voice_only()`** — bypass retrieval for drafting tasks; voice intact via system prompt.
-  - **Pure RAG (no LoRA)** — skip fine-tuning entirely for the safest deployment.
-- Runs on Apple Silicon Metal via Ollama after merging + quantising the LoRA.
-- Sub-second retrieval; ~5–15 s end-to-end per question on a Mac M-series.
-- The same `ask()` logic available three ways:
-  - Jupyter notebook (`local_inference/ask.ipynb`)
-  - REST API with auto-generated Swagger docs (`local_inference/api.py` → `http://localhost:8000/docs`)
-  - Single-script bot
-
-### Integrations
-
-- **Slack** via n8n + Cloudflare tunnel — slash commands `/ask-priya` and `/ask-rohan` reply in-channel with cited answers in seconds.
-- **Telegram** via `python-telegram-bot` — one self-contained script using long-polling (no webhook or tunnel needed).
-- **n8n importable workflow** with parallel ack-then-call pattern that meets Slack's 3-second response window.
-- **FastAPI REST endpoints** (`/ask`, `/voice_only`, `/personas`, `/`) for any custom integration.
-- Drop-in support for Cloudflared (recommended) or ngrok tunnels.
-
-### Deployment patterns
-
-The same pipeline supports a spectrum of deployments — pick by how personal the training data is:
-
-| Pattern | LoRA | RAG | Risk |
-|---|---|---|---|
-| Pure company RAG | none | all docs | low — safest first deployment |
-| Onboarding tutor | company brand voice | onboarding handbook | low |
-| Role persona | aggregate of all CSMs | new hire's accounts | medium — depersonalised |
-| Departing employee twin | one specific person | their corpus | high — needs full consent |
-| Public digital twin | one public figure | their published work | very high — heavy legal review |
-
-### Evaluation
-
-- Automated `eval.py` runs two metrics: history keyword recall (against gold answers) and style cosine similarity (against held-out replies).
-- Per-question gold answers in `training/eval_questions.json` — extend with your own.
-- Output written to `training/eval_results_<persona>.json` and `.md` for tracking across runs.
-
-### Reproducibility
-
-- Deterministic seeded generators — anyone can rebuild the corpus byte-identical.
-- Saved SFT pairs alongside trained adapters — anyone can audit what data the model was trained on.
-- Fully open: code under MIT, synthetic content under CC0, no proprietary tooling required.
-- One-click Colab notebook: clone → open → Runtime → Run All.
-
-### Privacy and governance hooks
-
-- `.gitignore` excludes secrets, model artifacts, and Drive-sync duplicates by default.
-- Documented patterns for: PII redaction at ingest, access-control tagging, citation thresholds, memorisation auditing, sunset planning, mandatory output disclaimers.
-- Designed to be retired cleanly: corpus + adapter + index + checkpoints can all be purged together.
+The repo ships with two synthetic demo personas — Priya (Senior CSM) and Rohan (Staff Engineer). Swap them out for your own and re-run.
 
 ---
 
-## Repo layout
+## How training works
 
 ```
-personas/         persona JSON fingerprints (tone, vocab, decisions)
-cast/             internal characters
+1. Persona JSON + corpus JSONL  ──►  prep_training_data.py
+                                          │
+                            ┌─────────────┴─────────────┐
+                            ▼                           ▼
+                     SFT pairs                    RAG chunks
+                (incoming → reply)             (text + metadata)
+                            │                           │
+                            ▼                           ▼
+                     train_lora.py             build_rag_index.py
+                            │                           │
+                            ▼                           ▼
+                  LoRA adapter (~150 MB)        FAISS index (~50 MB)
+                            │                           │
+                            └─────────────┬─────────────┘
+                                          ▼
+                                   inference.py / ask.py
+                                  (retrieve + generate)
+```
+
+Plain English:
+
+1. **Prep** turns the corpus into two streams. Every email thread where the persona replied becomes one training pair (input = prior thread, target = persona's reply). Every document also gets chunked for retrieval.
+2. **Train** fine-tunes Qwen2.5-7B with a tiny LoRA adapter on those pairs. Three epochs, ~30 minutes on an A100, ~$0.25 on Colab. The base model stays frozen; only the adapter learns the persona's style.
+3. **Index** embeds every chunk with BGE-base-en-v1.5 and writes a FAISS index. Sub-5 ms search across ~17k chunks.
+4. **Inference** pulls the top-k relevant chunks for a question, builds a prompt with `[Source N]` labels, sends it to Ollama (running the LoRA-merged model), and returns a cited answer.
+
+The system prompt — set in the Ollama Modelfile — tells the model who it is impersonating.
+
+---
+
+## Files in this repo
+
+```
+personas/         persona JSON fingerprints (tone, vocab, decision style)
+cast/             internal characters (~25 colleagues)
 accounts/         customer portfolio (40 accounts)
 projects/         engineering projects (14)
-corpus/           18,978 synthetic JSONL documents over 4 years
+corpus/           18,978 synthetic JSONL documents over 4 simulated years
+                  ├── priya/        emails, meetings, storylines
+                  └── rohan/        emails, RFCs, ADRs, postmortems
 scripts/          deterministic corpus generators (seed=42)
-training/         prep, train, RAG index, inference, eval, Colab notebook
-local_inference/  Mac deployment: FastAPI server, notebook, Telegram bot
-methodology/      methodology notes, lecture deck, technical detail
-```
 
-| Persona | Role | Storylines |
-|---|---|---|
-| Priya Sharma | Senior CSM, 40 accounts, $4.2M ARR | Acme billing dispute, Globex RFP, Umbrella SOC2, Hooli incident, Rekall churn |
-| Rohan Iyer | Staff Engineer, Platform team | Postgres-vs-Mongo decision, rate-limiter rewrite, GraphQL gateway killed, May 2024 outage |
+training/
+  ├── prep_training_data.py     corpus → SFT pairs + RAG chunks
+  ├── build_rag_index.py        chunks → FAISS index
+  ├── train_lora.py             LoRA fine-tune (Colab / RunPod)
+  ├── inference.py              RAG + generate, used by Colab
+  ├── eval.py                   automated history + style scoring
+  ├── eval_questions.json       gold demo questions
+  ├── Persona_Continuity_Colab.ipynb     one-click Colab training
+  ├── COLAB.md                  Colab quickstart
+  └── RUNBOOK.md                cloud GPU training (RunPod / Vast)
 
----
+local_inference/
+  ├── api.py                    FastAPI server (Mac, port 8000)
+  ├── ask.py                    interactive CLI
+  ├── ask.ipynb                 interactive notebook
+  ├── telegram_bot.py           Telegram bot (long-polling)
+  ├── n8n_workflow.json         importable n8n workflow for Slack
+  ├── Modelfile.priya           Ollama config for Priya GGUF
+  ├── Modelfile.rohan           Ollama config for Rohan GGUF
+  ├── SLACK_N8N_SETUP.md        Slack integration end-to-end
+  └── requirements.txt
 
-## Example
-
-```
-> What happened with Acme Corp?
-```
-
-```
-Thanks for the patience while I dug into this. The seat-count on Acme's
-Q1 invoice came in 31 seats over (388 vs 357), about $14k. Mike Reyes
-(CFO) pushed on this in a working session on March 4 [Source 1]. We
-landed on a partial credit ($4.2k applied to Q2) and Sarah Lin's team
-agreed to run quarterly seat-deactivation reviews going forward
-[Source 2]. The renewal is mid-April; Mike was clear that the credit
-conversation and the renewal conversation are linked from his side.
-
-SOURCES
-  [1] meeting-acme-001     2025-03-04   score=0.74
-  [2] email-acme-003       2025-03-03   score=0.71
-  [3] meeting-acme-1on1    2025-10-16   score=0.70
+methodology/
+  ├── METHODOLOGY.md            end-to-end methodology write-up
+  ├── PRESENTATION.md           lecture deck (Marp)
+  ├── CORPUS_TECHNICAL_DETAILS.md
+  └── VIDEO_READING_NOTES.md    spoken script for video walkthrough
 ```
 
 ---
 
-## Architecture
+## Train a new persona
 
-```
-Base model (Qwen2.5-7B, frozen)
-  + LoRA adapter (~150 MB, trained on 1,287 reply pairs)
-  + FAISS index (~50 MB, 17,663 chunks, BGE-base embeddings)
-  + System prompt (text fingerprint)
-  = persona-continuity model
-```
+The system is fully parameterised. To train on your own person and corpus:
 
-See [methodology/PRESENTATION.md](methodology/PRESENTATION.md) for the longer write-up.
+### 1. Create the persona fingerprint
 
----
-
-## Try it
-
-### Use the demo personas (Colab, ~30 min, ~$0.25)
+Copy the template and edit:
 
 ```bash
-git clone https://github.com/kader-xai/EmployeeRecall.git
+cp personas/priya.json personas/yourname.json
 ```
 
-Open `training/Persona_Continuity_Colab.ipynb` in Colab, set runtime to A100, Run All.
+Edit these fields in the new file:
 
-See [training/COLAB.md](training/COLAB.md).
+- `id`, `full_name`, `email`, `role`, `company`
+- `tone_profile` — register, verbosity, hedging style, humour
+- `vocab_fingerprint` — phrases they reach for / phrases they avoid
+- `signature_patterns` — greetings and sign-offs
+- `decision_style` — how they say no, when they escalate
+- `topics_owned` — what they're responsible for
 
-### Train on your own persona
+The fields are documented inline in [`personas/priya.json`](personas/priya.json).
 
-1. Copy `personas/priya.json` to `personas/yourname.json` and edit the fingerprint fields (`tone_profile`, `vocab_fingerprint`, `signature_patterns`, etc.).
-2. Drop your corpus into `corpus/yourname/` as JSONL — schema example in [corpus/priya/storyline_acme.jsonl](corpus/priya/storyline_acme.jsonl).
-3. Run:
+### 2. Add the corpus
+
+Drop JSONL files into `corpus/yourname/`. Each line is one document:
+
+```json
+{
+  "doc_id": "email-001",
+  "doc_type": "email",
+  "thread_id": "thread-42",
+  "thread_position": 2,
+  "date": "2024-06-15T10:00:00",
+  "from": {"name": "Your Name", "email": "you@company.com"},
+  "to":   [{"name": "Recipient", "email": "them@example.com"}],
+  "subject": "Re: Project status",
+  "body": "Quick context: ...",
+  "tags": ["project-x", "status"]
+}
+```
+
+Supported `doc_type` values: `email`, `meeting_notes`, `meeting_transcript`, `rfc`, `adr`, `postmortem`, `design_doc`. See [`corpus/priya/storyline_acme.jsonl`](corpus/priya/storyline_acme.jsonl) for full examples.
+
+### 3. Run the pipeline
 
 ```bash
+# 1. Prep — corpus → SFT pairs + RAG chunks
 python training/prep_training_data.py --persona yourname
-python training/build_rag_index.py    --persona yourname
-python training/train_lora.py         --persona yourname
-python training/inference.py          --persona yourname --interactive
+
+# 2. Build the FAISS index
+python training/build_rag_index.py --persona yourname
+
+# 3. Fine-tune the LoRA  (run on Colab A100, see training/COLAB.md)
+python training/train_lora.py --persona yourname
+
+# 4. Test it
+python training/inference.py --persona yourname --interactive
 ```
 
-### RAG only (no fine-tuning)
+For Colab, open [`training/Persona_Continuity_Colab.ipynb`](training/Persona_Continuity_Colab.ipynb), set runtime to A100, and Run All. ~30 minutes end-to-end.
 
-Skip `train_lora.py`. The inference script will retrieve and cite using only the base model. Safer for sensitive corpora — no parametric memorisation.
+The notebook also handles the merge → GGUF → quantise step that produces a portable model file (`yourname-q4_k_m.gguf`, ~4.5 GB) for local Mac inference.
 
 ---
 
-## Local deployment after training
+## Run with RAG locally
+
+After Colab produces the GGUF, run everything on your Mac.
+
+### 1. Register the model with Ollama
 
 ```bash
 brew install ollama
-ollama serve &
+ollama serve &     # or open Ollama.app
 
 cd local_inference
-ollama create priya -f Modelfile.priya
-ollama run priya
+
+# Copy the GGUF from training output
+cp ../training/yourname-q4_k_m.gguf .
+
+# Paste the generated system prompt into Modelfile.<persona>
+# (replace the SYSTEM "..." block with the contents of
+#  ../training/data/system_prompt_yourname.txt)
+
+ollama create yourname -f Modelfile.yourname
+ollama list
 ```
 
-For RAG-grounded answers, run [local_inference/ask.ipynb](local_inference/ask.ipynb) or:
+### 2. Install Python deps
 
 ```bash
-pip install -r local_inference/requirements.txt
-python local_inference/api.py        # FastAPI on :8000, Swagger at /docs
+pip install -r requirements.txt
 ```
 
-Telegram bot in [local_inference/telegram_bot.py](local_inference/telegram_bot.py); n8n + Slack workflow in [local_inference/SLACK_N8N_SETUP.md](local_inference/SLACK_N8N_SETUP.md).
+### 3. Ask questions
+
+Three ways:
+
+**Interactive CLI:**
+
+```bash
+python ask.py --persona yourname
+[yourname] > What happened with Acme Corp?
+```
+
+REPL commands inside the prompt:
+- `:v <prompt>` — voice-only mode (no retrieval, just drafts in the persona's voice)
+- `:p <persona>` — switch persona
+- `:k <number>` — change retrieval k (default 8)
+- `:q` — quit
+
+**Notebook:**
+
+Open `local_inference/ask.ipynb` in VS Code or Jupyter, run cells top to bottom. Cell 1 loads the embedder + index; cell 2 defines `ask()`; cell 3 onward is `ask("...")` calls.
+
+**REST API (for integrations):**
+
+```bash
+python api.py
+# http://127.0.0.1:8000/docs   ← Swagger UI
+```
+
+POST `/ask` returns JSON with `answer` and `sources`. POST `/voice_only` returns a draft in the persona's voice without retrieval.
 
 ---
 
-## Footprint
+## Connect with Slack
 
-| Layer | Size |
-|---|---|
-| Persona / cast / accounts / projects JSON | ~36 KB |
-| Synthetic corpus JSONL | ~13 MB |
-| Trained LoRA adapter | ~150 MB |
-| FAISS index + metadata | ~75 MB |
-| Quantised GGUF (Q4_K_M) | ~4.5 GB |
+Slack slash command → n8n → your local API → Ollama → reply in channel with citations.
 
-Total per persona on disk after deploy: ~5 GB.
+Full setup in [`local_inference/SLACK_N8N_SETUP.md`](local_inference/SLACK_N8N_SETUP.md). Short version:
 
----
+### 1. Run four things on your Mac
 
-## Cost
+| Terminal | Command | What it does |
+|---|---|---|
+| 1 | `ollama serve` (or open Ollama.app) | Persona model |
+| 2 | `cd local_inference && python api.py` | FastAPI on :8000 |
+| 3 | `npm install -g n8n && n8n start` | Workflow engine on :5678 |
+| 4 | `cloudflared tunnel --url http://localhost:5678` | Public HTTPS for Slack |
 
-| Step | Where | Time | Cost |
-|---|---|---|---|
-| Generate corpus | local | ~30s | $0 |
-| Prep / index | local | ~1 min | $0 |
-| LoRA fine-tune | Colab A100 | ~30 min | ~$0.25 |
-| Merge + GGUF + quantise | Colab A100 | ~10 min | ~$0.10 |
-| Daily inference | Mac | — | $0 |
+### 2. Import the workflow
 
----
+Open `http://localhost:5678` → **Workflows → Import from File** → pick `local_inference/n8n_workflow.json`.
 
-## Deployment patterns
+In the **Call Persona API** node, set the URL to `http://127.0.0.1:8000/ask`. Activate the workflow.
 
-The same pipeline supports a range of deployments. Choose by how personal the training data is:
+### 3. Create the Slack app
 
-| Pattern | LoRA | RAG | Use for |
-|---|---|---|---|
-| Pure company RAG | none | all docs | Safest first deployment |
-| Onboarding tutor | company brand voice | onboarding docs | New-hire ramp |
-| Role persona | aggregate of all CSMs | new hire's accounts | Avoids cloning a specific person |
-| Departing employee twin (this demo) | one person | their corpus | Senior succession; needs full consent |
-| Public digital twin | one public figure | their published work | Personal-brand bot; needs heavy legal review |
+At <https://api.slack.com/apps> → **Create New App** → From scratch:
 
----
+- **Slash Commands** → create `/ask-yourname` with Request URL = `https://<your-tunnel>.trycloudflare.com/webhook/slack-persona`
+- **OAuth & Permissions** → add `chat:write` scope
+- **Install to Workspace**
 
-## Privacy and consent
+### 4. Try it
 
-The demo corpus is fictional. For real deployment with real employees:
+```
+/ask-yourname What happened with Acme Corp?
+```
 
-- Get written consent from the persona, scoped to specific corpora and successor users.
-- Set a sunset date or condition for the model.
-- Redact PII at ingest (Microsoft Presidio or similar).
-- Tag every document with a clearance tier; filter retrieval per asker.
-- Log every query, retrieval, and output.
-- Run a memorisation audit before release (sample outputs, n-gram-check against training).
-- Refuse to answer when no source exceeds a similarity threshold.
-- Add a disclaimer to every output: "Drafted in the voice of X by an AI; not authored by X."
-
-The technical pipeline is the easy part. Governance is the rest.
-
----
-
-## Demo questions
-
-Priya:
-
-- What happened with Acme Corp?
-- Why did we credit Acme $4,200 in Q1 2025?
-- What's the renewal posture for Globex?
-- Why did Rekall churn?
-- Who is Mike Reyes and how should I handle him?
-- What was the May 2025 Hooli incident from the customer side?
-
-Rohan:
-
-- Why are we using Postgres for events instead of MongoDB?
-- What was the May 2024 incident?
-- Why did we kill the GraphQL gateway?
-- What's the trigger to revisit ClickHouse?
-- What does ADR-0023 say?
-
-Cross-persona: ask both *"What was the May 2025 Hooli incident?"* — Priya answers from the customer-comms angle, Rohan from the root-cause angle.
-
----
-
-## Stack
-
-| Layer | Tool |
-|---|---|
-| Base model | [Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
-| LoRA training | [Unsloth](https://github.com/unslothai/unsloth) + [PEFT](https://github.com/huggingface/peft) + [TRL](https://github.com/huggingface/trl) |
-| 4-bit base loading | [bitsandbytes](https://github.com/bitsandbytes-foundation/bitsandbytes) |
-| Embeddings | [BGE-base-en-v1.5](https://huggingface.co/BAAI/bge-base-en-v1.5) |
-| Vector index | [FAISS](https://github.com/facebookresearch/faiss) |
-| GGUF conversion | [llama.cpp](https://github.com/ggerganov/llama.cpp) |
-| Local inference | [Ollama](https://ollama.com) |
-| API | [FastAPI](https://fastapi.tiangolo.com) |
-| Workflow / Slack | [n8n](https://n8n.io) |
+Within ~10 seconds you should see a cited answer in the channel.
 
 ---
 
 ## License
 
-Code: MIT. Synthetic corpus and persona JSON: Creative Commons CC0. All persons, accounts, and events depicted are fictional.
+- **Code** — MIT
+- **Synthetic corpus and persona JSON** — Creative Commons CC0 (public domain)
+- All persons, accounts, and events depicted are fictional.
 
----
-
-## References
-
-- Hu et al., 2021 — [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685)
-- Xiao et al., 2023 — [C-Pack: Packed Resources For General Chinese Embeddings (BGE)](https://arxiv.org/abs/2309.07597)
-- Johnson et al., 2017 — [Billion-scale similarity search with GPUs (FAISS)](https://arxiv.org/abs/1702.08734)
+See [LICENSE](LICENSE).
 
 ---
 
 ## Author
 
-**Kader M.**
+**Kader Mohideen**
 
 - Website — [kader-xai.github.io](https://kader-xai.github.io)
 - LinkedIn — [linkedin.com/in/kader-m-1a6023a6](https://linkedin.com/in/kader-m-1a6023a6)
 - GitHub — [@kader-xai](https://github.com/kader-xai)
-
-For questions, deployment war-stories, or to share what you built on top of this — feel free to reach out via LinkedIn or open an issue.
