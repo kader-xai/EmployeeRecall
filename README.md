@@ -112,6 +112,8 @@ methodology/
 
 ## Train a new persona
 
+Overall Guide is available at train-own-persona.md
+
 The system is fully parameterised. To train on your own person and corpus:
 
 ### 1. Create the persona fingerprint
