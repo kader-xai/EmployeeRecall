@@ -112,7 +112,7 @@ methodology/
 
 ## Train a new persona
 
-Overall Guide is available at train-own-persona.md
+Overall Guide is available at https://github.com/kader-xai/EmployeeRecall/edit/main/README.md#:~:text=train%2Down%2D-,persona,-.md 
 
 The system is fully parameterised. To train on your own person and corpus:
 
