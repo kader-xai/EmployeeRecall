@@ -114,6 +114,7 @@ methodology/
 
 Overall Guide is available at [https://github.com/kader-xai/EmployeeRecall/edit/main/README.md#:~:text=train%2Down%2D-,persona,-.md ](https://github.com/kader-xai/EmployeeRecall/blob/main/train-own-persona.md)
 Presentation explaining the idea : https://github.com/kader-xai/EmployeeRecall/blob/main/Employee%20Digital%20Twin.pdf 
+
 The system is fully parameterised. To train on your own person and corpus:
 
 ### 1. Create the persona fingerprint
